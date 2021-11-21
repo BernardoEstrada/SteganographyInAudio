@@ -1,5 +1,14 @@
+# tells git to ignore everything
+*
+# then unignores anything that is a directory
+!*/
+# unignores all files WITH an extension
+!*.*
+
 .vscode
 *.o
 *.out
 out*.wav
+out/*.*
+
 .DS_Store
