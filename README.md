@@ -27,13 +27,13 @@ Comando para imprimir mensaje de ayuda:
 Comando para insertar con mensaje:
 
 ```bash
-./LSB.c -em  origin message destination
+./LSB.c -em  origin message destination <Bits per byte>
 ```
 
 Comando para insertar con archivo:
 
 ```bash
-./LSB -ef messagePath destination
+./LSB -ef messagePath destination <Bits per byte>
 ```
 
 Comando para extraer e imprimir:
