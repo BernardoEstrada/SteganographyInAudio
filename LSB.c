@@ -54,12 +54,15 @@ int decode(
 );
 
 int flagErrorFunc(char *flag, char *filename);
+int helpFunc(char *filename);
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
         return flagErrorFunc("n/a", argv[0]);
     }
 
+    if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0)
+        return helpFunc(argv[0]);
     if (strcmp(argv[1], "-em") == 0 && argc == 6)
         return encode_msg(argv[0], argv[2], argv[3], argv[4], argv[5]);
     if (strcmp(argv[1], "-ef") == 0 && argc == 6)
@@ -90,11 +93,39 @@ int flagErrorFunc(char *flag, char *filename){
         return -2;
     }
 
-    printf("usage: \n");
-    printf("%s < -ef | -em > origin < messagePath | message > destination <Bits to use in each byte (1, 2 or 4)>\n", filename);
-    printf("%s < -df | -dm > origin [output] <Bits per byte>\n", filename);
+    printf("unknown option: %s\n", flag);
+    printf("usage: %s ", filename);
+    printf("{-ef | -em} origin {messagePath | message} destination <Bits per byte>\n");
+    printf("%*c{-df | -dp} origin [output] <Bits per byte>\n", (int)strlen(filename)+8, ' ');
     printf("Type \"%s -h\" for more information \n", filename);
     return -2;
+}
+
+int helpFunc(char *filename){
+    printf("usage: ");
+    printf("%s { -em | -ef | -dp | -df | -h } [origin] [{messagePath|message}] [destination] [<Bits per byte>]\n", filename);
+
+    printf("\nFlags:\n");
+    printf("\t-em\tEncode into wav from text input\n");
+    printf("\t-ef\tEncode into wav from file\n");
+    printf("\t-dp\tDecode from wav and print to stdout\n");
+    printf("\t-df\tDecode from wav and output to file\n");
+    printf("\t-h\tPrint this help message\n");
+
+    printf("\nAttributes:\n");
+    printf("\torigin\t\tPath to the wav file to be encoded/decoded\n");
+    printf("\tmessagePath\tPath to the text file to be encoded\n");
+    printf("\tmessage\t\tText to be encoded\n");
+    printf("\tdestination\tPath to the wav file to be encoded/decoded\n");
+    printf("\tBits per byte\tBits per byte to use in the encoding/decoding (1, 2 or 4)\n");
+    
+    printf("\nExamples:\n");
+    printf("\t%s -em ./test.wav \"Hello World\" ./test_out.wav 4\n", filename);
+    printf("\t%s -ef ./test.wav ./test_msg.txt ./test_out.wav 4\n", filename);
+    printf("\t%s -dp ./test.wav 4\n", filename);
+    printf("\t%s -df ./test.wav ./test_out.wav 4\n", filename);
+
+    return 0;
 }
 
 int encode_msg(char *filename, char *originPath, char *msg, char *destinationPath, char *argBits) {
