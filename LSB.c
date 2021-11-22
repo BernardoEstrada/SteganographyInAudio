@@ -302,10 +302,7 @@ int extract(char *filename, char *originPath, char *argBits, ulong *outSize, uch
         fileByte < fileSize;
         i++, fileByte++
     ) {
-        uchar LSBs = (buffer[fileByte] & byteMask);
-        msgByteContent = (msgByteContent << noOfBits) | LSBs;
         if(i%8 == 0 && i!=0) {
-            msgByteContent = (msgByteContent >> noOfBits);
             outBuffer[msgByte] = msgByteContent;
             if(msgByteContent == '\0') {
                 *outSize = msgByte;
@@ -314,6 +311,8 @@ int extract(char *filename, char *originPath, char *argBits, ulong *outSize, uch
             msgByte++;
             msgByteContent = 0;
         };
+        uchar LSBs = (buffer[fileByte] & byteMask);
+        msgByteContent = (msgByteContent << noOfBits) | LSBs;
     }
 
     *outBufferPtr = outBuffer;
