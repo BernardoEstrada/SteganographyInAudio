@@ -12,4 +12,5 @@ out*.wav
 out/*.*
 test.*
 
+*.dSYM
 .DS_Store
