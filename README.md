@@ -24,28 +24,28 @@ Comando para imprimir mensaje de ayuda:
 ./LSB -h
 ```
 
-Comando para encodear con mensaje:
+Comando para insertar con mensaje:
 
 ```bash
 ./LSB.c -em  origin message destination
 ```
 
-Comando para encodear con archivo:
+Comando para insertar con archivo:
 
 ```bash
 ./LSB -ef messagePath destination
 ```
 
-Comando para decodificar e imprimir:
+Comando para extraer e imprimir:
 
 ```bash
-./LSB -dp origin <Bits per byte>
+./LSB -xp origin <Bits per byte>
 ```
 
-Comando para decodificar en un archivo:
+Comando para extraer en un archivo:
 
 ```bash
-./LSB -df origin output <Bits per byte>
+./LSB -xf origin output <Bits per byte>
 ```
 
 ## Credits

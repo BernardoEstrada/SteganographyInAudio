@@ -117,7 +117,7 @@ int helpFunc(char *filename){
     printf("\tmessagePath\tPath to the text file to be embedded\n");
     printf("\tmessage\t\tText to be embedded\n");
     printf("\tdestination\tPath to the wav file to be embedded/extracted\n");
-    printf("\tBits per byte\tBits per byte to use in the encoding/decoding (1, 2 or 4)\n");
+    printf("\tBits per byte\tBits per byte to use when embedding/extracting (1, 2 or 4)\n");
     
     printf("\nExamples:\n");
     printf("\t%s -em ./test.wav \"Hello World\" ./test_out.wav 4\n", filename);
