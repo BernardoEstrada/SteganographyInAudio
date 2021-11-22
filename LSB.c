@@ -11,13 +11,47 @@ int HEADER_SIZE = 45;
 typedef unsigned char uchar;
 typedef unsigned long ulong;
 
-int encode_msg(char *filename, char *originPath, char *msg, char *destinationPath, char *argBits);
-int encode_file(char *filename, char *originPath, char *messagePath, char *destinationPath, char *argBits);
-int encode(char *filename, char *originPath, char *messagePath, char *destinationPath, char *argBits);
+int encode_msg(
+    char *filename,
+    char *originPath,
+    char *msg,
+    char *destinationPath,
+    char *argBits
+);
+int encode_file(
+    char *filename,
+    char *originPath,
+    char *messagePath,
+    char *destinationPath,
+    char *argBits
+);
+int encode(
+    char *filename,
+    char *originPath,
+    uchar *messageBuffer,
+    ulong messageSize,
+    char *destinationPath,
+    char *argBits
+);
 
-int decode_out(char *filename, char *originPath, char *destinationPath, char *argBits);
-int decode_print(char *filename, char *originPath, char *argBits);
-int decode(char *filename, char *originPath, char *argBits, ulong *outSize, uchar **outBufferPtr);
+int decode_out(
+    char *filename,
+    char *originPath,
+    char *destinationPath,
+    char *argBits
+);
+int decode_print(
+    char *filename,
+    char *originPath,
+    char *argBits
+);
+int decode(
+    char *filename,
+    char *originPath,
+    char *argBits,
+    ulong *outSize,
+    uchar **outBufferPtr
+);
 
 int flagErrorFunc(char *flag, char *filename);
 
@@ -26,11 +60,11 @@ int main(int argc, char *argv[]) {
         return flagErrorFunc("n/a", argv[0]);
     }
 
-    if (strcmp(argv[1], "-em") == 0 && argc != 6)
-        return encode(argv[0], argv[2], argv[3], argv[4], argv[5]);
-    if (strcmp(argv[1], "-ef") == 0 && argc != 6)
-        return encode(argv[0], argv[2], argv[3], argv[4], argv[5]);
-    if (strcmp(argv[1], "-df") == 0 && argc != 5)
+    if (strcmp(argv[1], "-em") == 0 && argc == 6)
+        return encode_msg(argv[0], argv[2], argv[3], argv[4], argv[5]);
+    if (strcmp(argv[1], "-ef") == 0 && argc == 6)
+        return encode_file(argv[0], argv[2], argv[3], argv[4], argv[5]);
+    if (strcmp(argv[1], "-df") == 0 && argc == 5)
         return decode_out(argv[0], argv[2], argv[3], argv[4]);
     if (strcmp(argv[1], "-dp") == 0 && argc == 4)
         return decode_print(argv[0], argv[2], argv[3]);
@@ -39,21 +73,21 @@ int main(int argc, char *argv[]) {
 }
 
 int flagErrorFunc(char *flag, char *filename){
-    if(strcmp(flag, "-em")){
+    if(strcmp(flag, "-em") == 0){
         printf("usage: %s -em origin message destination <Bits per Byte>\n", filename);
         return -2;
     }
-    if(strcmp(flag, "-ef")){
+    if(strcmp(flag, "-ef") == 0){
         printf("usage: %s -ef origin messagePath destination <Bits per Byte>\n", filename);
         return -2;
     }
-    if(strcmp(flag, "-dp")){
+    if(strcmp(flag, "-dp") == 0){
         printf("usage: %s -dp origin <Bits per byte>\n", filename);
         return -2;
     }
-    if(strcmp(flag, "-df")) {
+    if(strcmp(flag, "-df") == 0) {
         printf("usage: %s -df origin output <Bits per byte>\n", filename);
-        return -2; 
+        return -2;
     }
 
     printf("usage: \n");
@@ -64,18 +98,48 @@ int flagErrorFunc(char *flag, char *filename){
 }
 
 int encode_msg(char *filename, char *originPath, char *msg, char *destinationPath, char *argBits) {
-    return 0;
+    uchar *messageBuffer;
+    ulong messageSize;
+
+    messageSize = strlen(msg);
+    messageBuffer = (uchar *)malloc(sizeof(uchar) * messageSize);
+
+    memccpy(messageBuffer, msg, 0, messageSize);
+
+    printf("%s\n", messageBuffer);
+    int res = encode(filename, originPath, messageBuffer, messageSize, destinationPath, argBits);
+
+    free(messageBuffer);
+
+    return res;
 }
 
 int encode_file(char *filename, char *originPath, char *messagePath, char *destinationPath, char *argBits) {
     int message;
+    uchar *messageBuffer;
+    ulong messageSize;
+
     if ((message = open(messagePath, O_RDONLY)) < 0) {
         perror(messagePath);
         return -3;
     }
+
+    messageSize = lseek(message, 0, SEEK_END);
+    messageBuffer = (uchar *)malloc(sizeof(uchar) * messageSize);
+
+    lseek(message, 0, SEEK_SET);
+    read(message, messageBuffer, messageSize);
+
+    printf("%s\n", messageBuffer);
+    int res = encode(filename, originPath, messageBuffer, messageSize, destinationPath, argBits);
+
+    free(messageBuffer);
+    close(message);
+
+    return res;
 }
 
-int encode(char *filename, char *originPath, char *msg, char *destinationPath, char *argBits) {
+int encode(char *filename, char *originPath, uchar *messageBuffer, ulong messageSize, char *destinationPath, char *argBits) {
     int origin, destination;
     uchar noOfBits;
 
@@ -83,11 +147,6 @@ int encode(char *filename, char *originPath, char *msg, char *destinationPath, c
         perror(originPath);
         return -3;
     }
-
-    // if ((message = open(messagePath, O_RDONLY)) < 0) {
-    //     perror(messagePath);
-    //     return -3;
-    // }
 
     if ((destination = open(destinationPath, O_WRONLY | O_CREAT | O_TRUNC, 0666)) < 0) {
         perror(destinationPath);
@@ -101,20 +160,12 @@ int encode(char *filename, char *originPath, char *msg, char *destinationPath, c
 
     int bytes;
     uchar *buffer;
-    uchar *messageBuffer;
 
     ulong fileSize = lseek(origin, 0, SEEK_END);
     buffer = (uchar *)malloc(sizeof(uchar) * fileSize);
 
-
-    ulong messageSize = lseek(message, 0, SEEK_END);
-    messageBuffer = (uchar *)malloc(sizeof(uchar) * messageSize);
-
     lseek(origin, 0, SEEK_SET);
     read(origin, buffer, fileSize);
-
-    lseek(message, 0, SEEK_SET);
-    read(message, messageBuffer, messageSize);
 
     uchar baseShift = (8-noOfBits);
     uchar iMod = 8/noOfBits;
@@ -138,7 +189,6 @@ int encode(char *filename, char *originPath, char *msg, char *destinationPath, c
         // uchar msgBits = messageBuffer[msgByte] >> (6-(i%4)*2) & 3;
         // uchar msgBits = messageBuffer[msgByte] >> (4-(i%2)*4) & 15;
 
-        printf("%c", messageBuffer[msgByte]);
         uchar msgBits = (messageBuffer[msgByte] >> (baseShift - ((i%iMod) * noOfBits))) & byteMask;
         if(i%8 == 0 && i!=0) msgByte++;   // move to next byte in message
         buffer[fileByte] = byteWithout2LSB | msgBits;
@@ -148,9 +198,7 @@ int encode(char *filename, char *originPath, char *msg, char *destinationPath, c
     printf("done\n");
 
     free(buffer);
-    free(messageBuffer);
     close(origin);
-    close(message);
     close(destination);
     return 0;
 }
@@ -159,20 +207,22 @@ int encode(char *filename, char *originPath, char *msg, char *destinationPath, c
 int decode_out(char *filename, char *originPath, char *destinationPath, char *argBits){
     int destination;
     ulong fileSize;
-    
+
     uchar *outBuffer = NULL;
-    
+
     int res = decode(filename, originPath, argBits, &fileSize, &outBuffer);
 
-    if ((destination = open(destinationPath, O_WRONLY | O_CREAT | O_TRUNC, 0666)) < 0) {
-        perror(destinationPath);
-        return -3;
+    if(res == 0) {
+        if ((destination = open(destinationPath, O_WRONLY | O_CREAT | O_TRUNC, 0666)) < 0) {
+            perror(destinationPath);
+            return -3;
+        }
+        write(destination, outBuffer, fileSize);
     }
-    write(destination, outBuffer, fileSize);
 
     close(destination);
     free(outBuffer);
-    return 0;
+    return res;
 }
 
 
