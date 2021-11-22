@@ -11,21 +11,21 @@ int HEADER_SIZE = 45;
 typedef unsigned char uchar;
 typedef unsigned long ulong;
 
-int encode_msg(
+int embed_msg(
     char *filename,
     char *originPath,
     char *msg,
     char *destinationPath,
     char *argBits
 );
-int encode_file(
+int embed_file(
     char *filename,
     char *originPath,
     char *messagePath,
     char *destinationPath,
     char *argBits
 );
-int encode(
+int embed(
     char *filename,
     char *originPath,
     uchar *messageBuffer,
@@ -34,18 +34,18 @@ int encode(
     char *argBits
 );
 
-int decode_out(
+int extract_out(
     char *filename,
     char *originPath,
     char *destinationPath,
     char *argBits
 );
-int decode_print(
+int extract_print(
     char *filename,
     char *originPath,
     char *argBits
 );
-int decode(
+int extract(
     char *filename,
     char *originPath,
     char *argBits,
@@ -64,13 +64,13 @@ int main(int argc, char *argv[]) {
     if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0)
         return helpFunc(argv[0]);
     if (strcmp(argv[1], "-em") == 0 && argc == 6)
-        return encode_msg(argv[0], argv[2], argv[3], argv[4], argv[5]);
+        return embed_msg(argv[0], argv[2], argv[3], argv[4], argv[5]);
     if (strcmp(argv[1], "-ef") == 0 && argc == 6)
-        return encode_file(argv[0], argv[2], argv[3], argv[4], argv[5]);
-    if (strcmp(argv[1], "-df") == 0 && argc == 5)
-        return decode_out(argv[0], argv[2], argv[3], argv[4]);
-    if (strcmp(argv[1], "-dp") == 0 && argc == 4)
-        return decode_print(argv[0], argv[2], argv[3]);
+        return embed_file(argv[0], argv[2], argv[3], argv[4], argv[5]);
+    if (strcmp(argv[1], "-xf") == 0 && argc == 5)
+        return extract_out(argv[0], argv[2], argv[3], argv[4]);
+    if (strcmp(argv[1], "-xp") == 0 && argc == 4)
+        return extract_print(argv[0], argv[2], argv[3]);
 
     return flagErrorFunc(argv[1], argv[0]);
 }
@@ -84,51 +84,51 @@ int flagErrorFunc(char *flag, char *filename){
         printf("usage: %s -ef origin messagePath destination <Bits per Byte>\n", filename);
         return -2;
     }
-    if(strcmp(flag, "-dp") == 0){
-        printf("usage: %s -dp origin <Bits per byte>\n", filename);
+    if(strcmp(flag, "-xp") == 0){
+        printf("usage: %s -xp origin <Bits per byte>\n", filename);
         return -2;
     }
-    if(strcmp(flag, "-df") == 0) {
-        printf("usage: %s -df origin output <Bits per byte>\n", filename);
+    if(strcmp(flag, "-xf") == 0) {
+        printf("usage: %s -xf origin output <Bits per byte>\n", filename);
         return -2;
     }
 
     printf("unknown option: %s\n", flag);
     printf("usage: %s ", filename);
     printf("{-ef | -em} origin {messagePath | message} destination <Bits per byte>\n");
-    printf("%*c{-df | -dp} origin [output] <Bits per byte>\n", (int)strlen(filename)+8, ' ');
+    printf("%*c{-xf | -xp} origin [output] <Bits per byte>\n", (int)strlen(filename)+8, ' ');
     printf("Type \"%s -h\" for more information \n", filename);
     return -2;
 }
 
 int helpFunc(char *filename){
     printf("usage: ");
-    printf("%s { -em | -ef | -dp | -df | -h } [origin] [{messagePath|message}] [destination] [<Bits per byte>]\n", filename);
+    printf("%s { -em | -ef | -xp | -xf | -h } [origin] [{messagePath|message}] [destination] [<Bits per byte>]\n", filename);
 
     printf("\nFlags:\n");
-    printf("\t-em\tEncode into wav from text input\n");
-    printf("\t-ef\tEncode into wav from file\n");
-    printf("\t-dp\tDecode from wav and print to stdout\n");
-    printf("\t-df\tDecode from wav and output to file\n");
+    printf("\t-em\tEmbed into wav from text input\n");
+    printf("\t-ef\tEmbed into wav from file\n");
+    printf("\t-xp\tExtract from wav and print to stdout\n");
+    printf("\t-xf\tExtract from wav and output to file\n");
     printf("\t-h\tPrint this help message\n");
 
     printf("\nAttributes:\n");
-    printf("\torigin\t\tPath to the wav file to be encoded/decoded\n");
-    printf("\tmessagePath\tPath to the text file to be encoded\n");
-    printf("\tmessage\t\tText to be encoded\n");
-    printf("\tdestination\tPath to the wav file to be encoded/decoded\n");
+    printf("\torigin\t\tPath to the wav file to be embedded/extracted\n");
+    printf("\tmessagePath\tPath to the text file to be embedded\n");
+    printf("\tmessage\t\tText to be embedded\n");
+    printf("\tdestination\tPath to the wav file to be embedded/extracted\n");
     printf("\tBits per byte\tBits per byte to use in the encoding/decoding (1, 2 or 4)\n");
     
     printf("\nExamples:\n");
     printf("\t%s -em ./test.wav \"Hello World\" ./test_out.wav 4\n", filename);
     printf("\t%s -ef ./test.wav ./test_msg.txt ./test_out.wav 4\n", filename);
-    printf("\t%s -dp ./test.wav 4\n", filename);
-    printf("\t%s -df ./test.wav ./test_out.wav 4\n", filename);
+    printf("\t%s -xp ./test.wav 4\n", filename);
+    printf("\t%s -xf ./test.wav ./test_out.wav 4\n", filename);
 
     return 0;
 }
 
-int encode_msg(char *filename, char *originPath, char *msg, char *destinationPath, char *argBits) {
+int embed_msg(char *filename, char *originPath, char *msg, char *destinationPath, char *argBits) {
     uchar *messageBuffer;
     ulong messageSize;
 
@@ -138,14 +138,14 @@ int encode_msg(char *filename, char *originPath, char *msg, char *destinationPat
     memccpy(messageBuffer, msg, 0, messageSize);
 
     printf("%s\n", messageBuffer);
-    int res = encode(filename, originPath, messageBuffer, messageSize, destinationPath, argBits);
+    int res = embed(filename, originPath, messageBuffer, messageSize, destinationPath, argBits);
 
     free(messageBuffer);
 
     return res;
 }
 
-int encode_file(char *filename, char *originPath, char *messagePath, char *destinationPath, char *argBits) {
+int embed_file(char *filename, char *originPath, char *messagePath, char *destinationPath, char *argBits) {
     int message;
     uchar *messageBuffer;
     ulong messageSize;
@@ -162,7 +162,7 @@ int encode_file(char *filename, char *originPath, char *messagePath, char *desti
     read(message, messageBuffer, messageSize);
 
     printf("%s\n", messageBuffer);
-    int res = encode(filename, originPath, messageBuffer, messageSize, destinationPath, argBits);
+    int res = embed(filename, originPath, messageBuffer, messageSize, destinationPath, argBits);
 
     free(messageBuffer);
     close(message);
@@ -170,7 +170,7 @@ int encode_file(char *filename, char *originPath, char *messagePath, char *desti
     return res;
 }
 
-int encode(char *filename, char *originPath, uchar *messageBuffer, ulong messageSize, char *destinationPath, char *argBits) {
+int embed(char *filename, char *originPath, uchar *messageBuffer, ulong messageSize, char *destinationPath, char *argBits) {
     int origin, destination;
     uchar noOfBits;
 
@@ -235,13 +235,13 @@ int encode(char *filename, char *originPath, uchar *messageBuffer, ulong message
 }
 
 
-int decode_out(char *filename, char *originPath, char *destinationPath, char *argBits){
+int extract_out(char *filename, char *originPath, char *destinationPath, char *argBits){
     int destination;
     ulong fileSize;
 
     uchar *outBuffer = NULL;
 
-    int res = decode(filename, originPath, argBits, &fileSize, &outBuffer);
+    int res = extract(filename, originPath, argBits, &fileSize, &outBuffer);
 
     if(res == 0) {
         if ((destination = open(destinationPath, O_WRONLY | O_CREAT | O_TRUNC, 0666)) < 0) {
@@ -257,18 +257,18 @@ int decode_out(char *filename, char *originPath, char *destinationPath, char *ar
 }
 
 
-int decode_print(char *filename, char *originPath, char *argBits){
+int extract_print(char *filename, char *originPath, char *argBits){
     ulong fileSize;
     uchar *outBuffer = NULL;
 
-    int res = decode(filename, originPath, argBits, &fileSize, &outBuffer);
+    int res = extract(filename, originPath, argBits, &fileSize, &outBuffer);
     if(res == 0) printf("%s\n", outBuffer);
 
     free(outBuffer);
     return res;
 }
 
-int decode(char *filename, char *originPath, char *argBits, ulong *outSize, uchar **outBufferPtr) {
+int extract(char *filename, char *originPath, char *argBits, ulong *outSize, uchar **outBufferPtr) {
     int origin, destination;
     uchar noOfBits;
 
