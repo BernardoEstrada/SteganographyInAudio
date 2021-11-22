@@ -10,5 +10,6 @@
 *.out
 out*.wav
 out/*.*
+test.*
 
 .DS_Store

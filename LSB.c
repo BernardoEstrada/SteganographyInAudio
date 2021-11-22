@@ -9,9 +9,10 @@ typedef unsigned long ulong;
 
 int main(int argc, char *argv[]) {
     int origin, message, destination;
+    uchar noOfBits;
 
-    if (argc != 4) {
-        printf("usage: %s origin message destination\n", argv[0]);
+    if (argc != 5) {
+        printf("usage: %s origin message destination [No. of Bits to use in each byte (1, 2 or 4)]\n", argv[0]);
         return -2;
     }
 
@@ -28,6 +29,11 @@ int main(int argc, char *argv[]) {
     if ((destination = open(argv[3], O_WRONLY | O_CREAT | O_TRUNC, 0666)) < 0) {
         perror(argv[3]);
         return -3;
+    }
+
+    if (noOfBits = atoi(argv[4]) && (noOfBits != 1 && noOfBits != 2 && noOfBits != 4)) {
+        printf("%s: Number of bits must be 1, 2 or 4\n", argv[0]);
+        return -2;
     }
 
     int bytes;
@@ -47,14 +53,20 @@ int main(int argc, char *argv[]) {
     lseek(message, 0, SEEK_SET);
     read(message, messageBuffer, messageSize);
 
+    uchar baseShift = (7-noOfBits/2);
+    uchar iMod = 8/noOfBits;
+    uchar byteMask = 15 >> (4-noOfBits);
+
+    uchar inputMask = (255 >> noOfBits) << noOfBits;
+
     for (int i = 0, j = 0; i < fileSize; i++) {
         uchar byteWithout2LSB = (buffer[i+45] & 248);
-        // use 1 lsb
-        // uchar msgBit = messageBuffer[j] >> (7-i%8) & 1;
-        // use 2 lsb
+        // To get 1, 2 and 4 significant bits from the message
+        // uchar msgBits = messageBuffer[j] >> (7-(i%8)*1) & 1;
         // uchar msgBits = messageBuffer[j] >> (6-(i%4)*2) & 3;
-        // use 4 lsb
-        uchar msgBits = messageBuffer[j] >> (4-(i%2)*4) & 7;
+        // uchar msgBits = messageBuffer[j] >> (4-(i%2)*4) & 15;
+
+        uchar msgBits = (messageBuffer[j] >> (baseShift - ((i%iMod) * noOfBits))) & byteMask;
         if(i%8 == 0) j++;   // move to next byte in message
         buffer[i+45] = byteWithout2LSB | msgBits;
     }
