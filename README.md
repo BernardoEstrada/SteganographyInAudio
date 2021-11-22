@@ -50,7 +50,7 @@ Comando para extraer en un archivo:
 
 ## Credits
 
-Bernardo Estrada Fuentes [@BernardoEstrada]( github.com/BernardoEstrada )
+Bernardo Estrada Fuentes [@BernardoEstrada]( https://github.com/BernardoEstrada )
 
 Francisco Agustín Díaz Vergara
 
